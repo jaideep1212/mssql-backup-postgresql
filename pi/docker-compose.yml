@@ -1,0 +1,54 @@
+# =============================================================
+# pi/docker-compose.yml  -  TEST lane replicator for the Raspberry Pi.
+#
+# ON-DEMAND model: the container runs IDLE (sleep infinity). It does NOT run
+# on a timer. The laptop decides when there is work (it checks BackupOutbox
+# locally), opens the SQL Server firewall port, and triggers ONE cycle with:
+#
+#     ssh <pi> "docker exec replicator-test python -m replicator.run_once"
+#
+# So this compose just keeps the container alive and reachable for that exec.
+#
+# Runs ONLY the replicator. Your existing "postgres" container (holding
+# household_test) is left untouched; the replicator joins its network so it
+# can reach it by the hostname "postgres".
+#
+# Prereqs on the Pi (already done):
+#   - postgres container running, with household_test + schema + svcbackup role
+#   - a .env file next to this compose (NOT committed) supplying the values below
+#
+# Bring up:   docker compose --env-file .env up -d
+# Trigger:    docker exec replicator-test python -m replicator.run_once
+# Logs:       docker compose logs -f replicator-test   (quiet until triggered)
+# =============================================================
+
+services:
+  replicator-test:
+    # Image built locally on the Pi by Jenkins (native arm64). No registry:
+    # build and run are on the same machine, so the image is referenced by its
+    # LOCAL tag. IMAGE_TAG lets CI pin a specific build; defaults to latest.
+    image: mssql-backup-replicator:${IMAGE_TAG:-latest}
+    container_name: replicator-test        # the name the SSH trigger execs into
+    restart: unless-stopped                # stay up (idle) across reboots
+    env_file:
+      - .env
+    environment:
+      # Lane pinning: this container is TEST, always.
+      LANE: "TEST"
+      # PG_HOST is the existing postgres container's name on the shared network.
+      PG_HOST: "postgres"
+      PG_PORT: "5432"
+      # MSSQL_*, PG_*_TEST, etc. come from .env via env_file above.
+      # NOTE: INTERVAL_MINUTES is no longer used here - the cadence now lives in
+      # the laptop's scheduled task, which triggers run_once. It is harmless if
+      # still present in .env.
+    networks:
+      - pgnet
+
+networks:
+  # The network your existing "postgres" container is already on.
+  # Marked external so compose JOINS it instead of creating a new one.
+  # Set "name" to whatever  docker inspect postgres  reported for its network.
+  pgnet:
+    external: true
+    name: bridge
