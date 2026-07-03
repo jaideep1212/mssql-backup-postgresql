@@ -20,6 +20,7 @@ Correctness:
     so every reload reproduces source IDs exactly.
   - FK-free mirror: plain TRUNCATE is safe (no reference ordering).
 """
+
 from __future__ import annotations
 import logging
 
@@ -43,8 +44,8 @@ def snapshot_table(mssql_table: str, mssql, pgconn, fetch_batch: int) -> int:
     mssql_cols = mapping.mssql_columns(mssql_table)
     pg_cols = mapping.pg_columns(mssql_table)
 
-    src_col_sql = ", ".join(f"[{c}]" for c in mssql_cols)     # SQL Server side
-    pg_col_sql = ", ".join(pg_cols)                            # Postgres side
+    src_col_sql = ", ".join(f"[{c}]" for c in mssql_cols)  # SQL Server side
+    pg_col_sql = ", ".join(pg_cols)  # Postgres side
     placeholders = ", ".join(["%s"] * len(pg_cols))
 
     # ---- 1. Read all rows from SQL Server ----
@@ -68,10 +69,12 @@ def snapshot_table(mssql_table: str, mssql, pgconn, fetch_batch: int) -> int:
 
         # ---- 3. Atomic swap ----
         pg.execute(f"TRUNCATE {pg_tbl};")
-        pg.execute(f"INSERT INTO {pg_tbl} ({pg_col_sql}) SELECT {pg_col_sql} FROM {staging};")
+        pg.execute(
+            f"INSERT INTO {pg_tbl} ({pg_col_sql}) SELECT {pg_col_sql} FROM {staging};"
+        )
         pg.execute(f"DROP TABLE IF EXISTS {staging};")
 
-    pgconn.commit()   # single commit -> swap is atomic to Postgres readers
+    pgconn.commit()  # single commit -> swap is atomic to Postgres readers
     log.info("snapshot %s -> %s: %d rows", mssql_table, pg_tbl, total)
     return total
 

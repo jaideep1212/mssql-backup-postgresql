@@ -6,6 +6,7 @@ is the single source of truth for names. The consumer uses it to translate each
 SQL Server column to its snake_case PostgreSQL name at snapshot time, rather than
 guessing by lowercasing - so the consumer can never drift from the deployed schema.
 """
+
 from __future__ import annotations
 import json
 import os
