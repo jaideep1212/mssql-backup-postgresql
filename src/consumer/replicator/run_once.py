@@ -20,6 +20,7 @@ claimed rows and does not re-raise), a "failure" here is detected by checking
 whether the cycle raised at the top level - which only happens on unexpected
 errors like the SQL Server connection failing to open at all.
 """
+
 from __future__ import annotations
 import logging
 import sys
