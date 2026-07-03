@@ -11,6 +11,7 @@ retries (full-snapshot is idempotent, so retry is always safe).
 The loop is self-contained (no external scheduler). To switch to an external
 cron/systemd timer later, call run_cycle() once per invocation instead of loop().
 """
+
 from __future__ import annotations
 import logging
 import sys
@@ -49,8 +50,12 @@ def run_cycle(cfg: Config) -> None:
 
         event_ids = [eid for eid, _ in claimed]
         tables = outbox.distinct_tables(claimed)
-        log.info("claimed %d row(s) -> %d distinct table(s): %s",
-                 len(claimed), len(tables), ", ".join(tables))
+        log.info(
+            "claimed %d row(s) -> %d distinct table(s): %s",
+            len(claimed),
+            len(tables),
+            ", ".join(tables),
+        )
 
         try:
             with pg_conn(cfg) as pg:
@@ -65,7 +70,9 @@ def run_cycle(cfg: Config) -> None:
                 outbox.release(cur, event_ids, repr(exc))
                 mssql.commit()
             except Exception:  # noqa: BLE001
-                log.exception("failed to release claimed rows; reaper will recover them")
+                log.exception(
+                    "failed to release claimed rows; reaper will recover them"
+                )
             # Do not re-raise: the loop should survive and retry next cycle.
 
 

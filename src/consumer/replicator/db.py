@@ -8,6 +8,7 @@ Both drivers hand binary columns back/forth as native Python ``bytes``:
 So the binary path is "bytes in, bytes out" with NO text decode anywhere,
 which is exactly what the encrypted/hashed VARBINARY columns require.
 """
+
 from __future__ import annotations
 import contextlib
 import pyodbc

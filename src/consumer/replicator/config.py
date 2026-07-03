@@ -9,6 +9,7 @@ by which env vars the container was started with, not by runtime logic.
 No secrets live in code. The container is started with the right environment
 (see .env.example); the same image runs both lanes with different env.
 """
+
 from __future__ import annotations
 import os
 import sys
@@ -38,7 +39,9 @@ class Config:
         # ---- Lane: PROD or TEST, pinned for the life of the process ----
         self.lane = _req("LANE").upper()
         if self.lane not in ("PROD", "TEST"):
-            sys.stderr.write(f"[config] FATAL: LANE must be PROD or TEST, got {self.lane!r}\n")
+            sys.stderr.write(
+                f"[config] FATAL: LANE must be PROD or TEST, got {self.lane!r}\n"
+            )
             sys.exit(2)
 
         # ---- Timer ----
@@ -47,14 +50,18 @@ class Config:
         self.reaper_stale_minutes = _int("REAPER_STALE_MINUTES", 15)
 
         # ---- SQL Server (source) ----
-        self.mssql_host = _req("MSSQL_HOST")          # server name, e.g. MYSERVER\SQLEXPRESS or host.domain
+        self.mssql_host = _req(
+            "MSSQL_HOST"
+        )  # server name, e.g. MYSERVER\SQLEXPRESS or host.domain
         self.mssql_port = _int("MSSQL_PORT", 1433)
-        self.mssql_db = _req(f"MSSQL_DB_{self.lane}")              # LocalTestDB (LocalProdDB later)
+        self.mssql_db = _req(f"MSSQL_DB_{self.lane}")  # LocalTestDB (LocalProdDB later)
 
         # Auth mode: "sql" (dedicated SQL login, default) or "windows" (integrated/Kerberos).
         self.mssql_auth = os.environ.get("MSSQL_AUTH", "sql").lower()
         if self.mssql_auth == "sql":
-            self.mssql_user = _req("MSSQL_USER")      # e.g. svc_replication_reader
+            self.mssql_user = _req(
+                f"MSSQL_USER_{self.lane}"
+            )  # e.g. svc_replication_reader
             self.mssql_password = _req(f"MSSQL_PASSWORD_{self.lane}")
         else:
             # Windows/integrated auth: no username/password in config; the
@@ -69,8 +76,8 @@ class Config:
         # ---- PostgreSQL (target) ----
         self.pg_host = _req("PG_HOST")
         self.pg_port = _int("PG_PORT", 5432)
-        self.pg_db = _req(f"PG_DB_{self.lane}")                # proddb or testdb
-        self.pg_user = _req("PG_USER")
+        self.pg_db = _req(f"PG_DB_{self.lane}")  # proddb or testdb
+        self.pg_user = _req(f"PG_USER_{self.lane}")
         self.pg_password = _req(f"PG_PASSWORD_{self.lane}")
 
         # ---- Snapshot read batching (rows fetched per round-trip) ----
