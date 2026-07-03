@@ -1,0 +1,20 @@
+# secrets / config
+.env
+.env.*
+secrets/
+*.pem
+*.key
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# node
+node_modules/
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/
