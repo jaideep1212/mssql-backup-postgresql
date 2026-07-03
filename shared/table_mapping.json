@@ -1,0 +1,1159 @@
+{
+  "_meta": {
+    "purpose": "Authoritative field map: SQL Server (LocalTestDB / LocalProdDB) <-> PostgreSQL (household_test / household_prod).",
+    "authority": "PostgreSQL names/types come from schema.sql (the deployed DDL). SQL Server names come from the source tables.",
+    "naming": "snake_case on the PostgreSQL side.",
+    "design_decisions": [
+      "Option A: pg 'id' carries the SQL Server ID verbatim (consumer inserts it explicitly).",
+      "Mirror is FK-free: dim_users_s -> dim_users FK + ON DELETE CASCADE are intentionally omitted so the consumer's atomic swap can use plain TRUNCATE.",
+      "VARBINARY(*) -> bytea, carried as raw bytes (no decode)."
+    ]
+  },
+  "tables": {
+    "dbo.DimAccounts": {
+      "mssql_table": "dbo.DimAccounts",
+      "pg_table": "dim_accounts",
+      "pk": {
+        "mssql": "ID",
+        "pg": "id"
+      },
+      "columns": [
+        {
+          "mssql": "ID",
+          "pg": "id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "AccountNo",
+          "pg": "account_no",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "AccountNoHash",
+          "pg": "account_no_hash",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "EntityId",
+          "pg": "entity_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "AccountType",
+          "pg": "account_type",
+          "pg_type": "text"
+        },
+        {
+          "mssql": "FirstHolderId",
+          "pg": "first_holder_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "JointHolder1Id",
+          "pg": "joint_holder1_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "JointHolder2Id",
+          "pg": "joint_holder2_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "OperationType",
+          "pg": "operation_type",
+          "pg_type": "text"
+        },
+        {
+          "mssql": "FirstHolderAddress",
+          "pg": "first_holder_address",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "Nominee1Id",
+          "pg": "nominee1_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "Nominee2Id",
+          "pg": "nominee2_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "CIF",
+          "pg": "cif",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "MinimumBalance",
+          "pg": "minimum_balance",
+          "pg_type": "numeric(18,2)"
+        },
+        {
+          "mssql": "OpenYear",
+          "pg": "open_year",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "ChequeBookCount",
+          "pg": "cheque_book_count",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "EmailId",
+          "pg": "email_id",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "ContactNo",
+          "pg": "contact_no",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "IsActive",
+          "pg": "is_active",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "PassbookAvailable",
+          "pg": "passbook_available",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "OnlineBankingAllowed",
+          "pg": "online_banking_allowed",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "OnlineLoginAvailable",
+          "pg": "online_login_available",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "AadharLinked",
+          "pg": "aadhar_linked",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "BrokersLinked",
+          "pg": "brokers_linked",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "Comments",
+          "pg": "comments",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "CreatedDate",
+          "pg": "created_date",
+          "pg_type": "timestamp"
+        },
+        {
+          "mssql": "ModifiedDate",
+          "pg": "modified_date",
+          "pg_type": "timestamp"
+        }
+      ]
+    },
+    "dbo.DimEntities": {
+      "mssql_table": "dbo.DimEntities",
+      "pg_table": "dim_entities",
+      "pk": {
+        "mssql": "ID",
+        "pg": "id"
+      },
+      "columns": [
+        {
+          "mssql": "ID",
+          "pg": "id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "EntityNameHash",
+          "pg": "entity_name_hash",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "EntityName",
+          "pg": "entity_name",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "EntityBranch",
+          "pg": "entity_branch",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "AddressLine1",
+          "pg": "address_line1",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "AddressLine2",
+          "pg": "address_line2",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "City",
+          "pg": "city",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "PostCode",
+          "pg": "post_code",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "Country",
+          "pg": "country",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "CustomerCareEmailId",
+          "pg": "customer_care_email_id",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "CustomerCarePhoneNo",
+          "pg": "customer_care_phone_no",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "CustomerCareWebsite",
+          "pg": "customer_care_website",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "IFSC",
+          "pg": "ifsc",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "MICR",
+          "pg": "micr",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "SWIFT",
+          "pg": "swift",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "IBAN",
+          "pg": "iban",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "EntityType",
+          "pg": "entity_type",
+          "pg_type": "varchar(5)"
+        },
+        {
+          "mssql": "IsOnline",
+          "pg": "is_online",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "RegistrarId",
+          "pg": "registrar_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "CreatedDate",
+          "pg": "created_date",
+          "pg_type": "timestamp"
+        },
+        {
+          "mssql": "ModifiedDate",
+          "pg": "modified_date",
+          "pg_type": "timestamp"
+        }
+      ]
+    },
+    "dbo.DimMutualFunds": {
+      "mssql_table": "dbo.DimMutualFunds",
+      "pg_table": "dim_mutual_funds",
+      "pk": {
+        "mssql": "ID",
+        "pg": "id"
+      },
+      "columns": [
+        {
+          "mssql": "ID",
+          "pg": "id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "ISINFolioHolderHash",
+          "pg": "isin_folio_holder_hash",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "FolioNo",
+          "pg": "folio_no",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "SchemeName",
+          "pg": "scheme_name",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "ISIN",
+          "pg": "isin",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "SchemeCode",
+          "pg": "scheme_code",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "SchemeCategory",
+          "pg": "scheme_category",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "FirstHolderId",
+          "pg": "first_holder_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "JointHolder1Id",
+          "pg": "joint_holder1_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "JointHolder2Id",
+          "pg": "joint_holder2_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "Nominee1Id",
+          "pg": "nominee1_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "Nominee2Id",
+          "pg": "nominee2_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "OperationMode",
+          "pg": "operation_mode",
+          "pg_type": "varchar(20)"
+        },
+        {
+          "mssql": "TotalUnitsBought",
+          "pg": "total_units_bought",
+          "pg_type": "numeric(11,4)"
+        },
+        {
+          "mssql": "TotalUnitsSold",
+          "pg": "total_units_sold",
+          "pg_type": "numeric(11,4)"
+        },
+        {
+          "mssql": "TotalUnitsHeld",
+          "pg": "total_units_held",
+          "pg_type": "numeric(11,4)"
+        },
+        {
+          "mssql": "TotalInvestedAmount",
+          "pg": "total_invested_amount",
+          "pg_type": "numeric(11,2)"
+        },
+        {
+          "mssql": "TotalRedeemedAmount",
+          "pg": "total_redeemed_amount",
+          "pg_type": "numeric(11,2)"
+        },
+        {
+          "mssql": "TotalDividendReceived",
+          "pg": "total_dividend_received",
+          "pg_type": "numeric(11,2)"
+        },
+        {
+          "mssql": "IsActive",
+          "pg": "is_active",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "LinkedEntityId",
+          "pg": "linked_entity_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "IsDividend",
+          "pg": "is_dividend",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "IsOnline",
+          "pg": "is_online",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "IsDemat",
+          "pg": "is_demat",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "Comments",
+          "pg": "comments",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "CreatedDate",
+          "pg": "created_date",
+          "pg_type": "timestamp"
+        },
+        {
+          "mssql": "ModifiedDate",
+          "pg": "modified_date",
+          "pg_type": "timestamp"
+        }
+      ]
+    },
+    "dbo.DimUsers": {
+      "mssql_table": "dbo.DimUsers",
+      "pg_table": "dim_users",
+      "pk": {
+        "mssql": "ID",
+        "pg": "id"
+      },
+      "columns": [
+        {
+          "mssql": "ID",
+          "pg": "id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "UserNameHash",
+          "pg": "user_name_hash",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "Gender",
+          "pg": "gender",
+          "pg_type": "char(1)"
+        },
+        {
+          "mssql": "Age",
+          "pg": "age",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "FatherId",
+          "pg": "father_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "MotherId",
+          "pg": "mother_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "SpouseId",
+          "pg": "spouse_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "MaritalStatus",
+          "pg": "marital_status",
+          "pg_type": "char(1)"
+        },
+        {
+          "mssql": "IsExpired",
+          "pg": "is_expired",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "CreatedDate",
+          "pg": "created_date",
+          "pg_type": "timestamp"
+        },
+        {
+          "mssql": "ModifiedDate",
+          "pg": "modified_date",
+          "pg_type": "timestamp"
+        }
+      ]
+    },
+    "dbo.DimUsers_S": {
+      "mssql_table": "dbo.DimUsers_S",
+      "pg_table": "dim_users_s",
+      "pk": {
+        "mssql": "ID",
+        "pg": "id"
+      },
+      "columns": [
+        {
+          "mssql": "ID",
+          "pg": "id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "UserID",
+          "pg": "user_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "FirstName",
+          "pg": "first_name",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "LastName",
+          "pg": "last_name",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "BirthDate",
+          "pg": "birth_date",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "BirthCity",
+          "pg": "birth_city",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "BirthCountry",
+          "pg": "birth_country",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "MarriageDate",
+          "pg": "marriage_date",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "CurrentAddressLine1",
+          "pg": "current_address_line1",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "CurrentAddressLine2",
+          "pg": "current_address_line2",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "CurrentCity",
+          "pg": "current_city",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "CurrentPostCode",
+          "pg": "current_post_code",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "CurrentCountry",
+          "pg": "current_country",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "PermanentAddressLine1",
+          "pg": "permanent_address_line1",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "PermanentAddressLine2",
+          "pg": "permanent_address_line2",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "PermanentCity",
+          "pg": "permanent_city",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "PermanentPostCode",
+          "pg": "permanent_post_code",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "PermanentCountry",
+          "pg": "permanent_country",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "ContactEmailId",
+          "pg": "contact_email_id",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "ContactMobileNo",
+          "pg": "contact_mobile_no",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "ContactPhoneNo",
+          "pg": "contact_phone_no",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "WorkEmailId",
+          "pg": "work_email_id",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "WorkMobileNo",
+          "pg": "work_mobile_no",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "WorkPhoneNo",
+          "pg": "work_phone_no",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "ExpiredDate",
+          "pg": "expired_date",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "PAN",
+          "pg": "pan",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "Aadhar",
+          "pg": "aadhar",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "TIN",
+          "pg": "tin",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "CreatedDate",
+          "pg": "created_date",
+          "pg_type": "timestamp"
+        },
+        {
+          "mssql": "ModifiedDate",
+          "pg": "modified_date",
+          "pg_type": "timestamp"
+        }
+      ]
+    },
+    "dbo.FactAccountBrokerMappings": {
+      "mssql_table": "dbo.FactAccountBrokerMappings",
+      "pg_table": "fact_account_broker_mappings",
+      "pk": {
+        "mssql": "ID",
+        "pg": "id"
+      },
+      "columns": [
+        {
+          "mssql": "ID",
+          "pg": "id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "AccountId",
+          "pg": "account_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "BrokerId",
+          "pg": "broker_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "CreatedDate",
+          "pg": "created_date",
+          "pg_type": "timestamp"
+        },
+        {
+          "mssql": "ModifiedDate",
+          "pg": "modified_date",
+          "pg_type": "timestamp"
+        }
+      ]
+    },
+    "dbo.FactAliases": {
+      "mssql_table": "dbo.FactAliases",
+      "pg_table": "fact_aliases",
+      "pk": {
+        "mssql": "ID",
+        "pg": "id"
+      },
+      "columns": [
+        {
+          "mssql": "ID",
+          "pg": "id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "RecordType",
+          "pg": "record_type",
+          "pg_type": "varchar(50)"
+        },
+        {
+          "mssql": "RecordId",
+          "pg": "record_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "AliasName",
+          "pg": "alias_name",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "CreatedDate",
+          "pg": "created_date",
+          "pg_type": "timestamp"
+        },
+        {
+          "mssql": "ModifiedDate",
+          "pg": "modified_date",
+          "pg_type": "timestamp"
+        }
+      ]
+    },
+    "dbo.FactDeposits": {
+      "mssql_table": "dbo.FactDeposits",
+      "pg_table": "fact_deposits",
+      "pk": {
+        "mssql": "ID",
+        "pg": "id"
+      },
+      "columns": [
+        {
+          "mssql": "ID",
+          "pg": "id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "DepositNo",
+          "pg": "deposit_no",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "DepositNoHash",
+          "pg": "deposit_no_hash",
+          "pg_type": "varchar(64)"
+        },
+        {
+          "mssql": "EntityId",
+          "pg": "entity_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "LinkedAccountId",
+          "pg": "linked_account_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "FirstHolderId",
+          "pg": "first_holder_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "JointHolder1Id",
+          "pg": "joint_holder1_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "JointHolder2Id",
+          "pg": "joint_holder2_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "OperationType",
+          "pg": "operation_type",
+          "pg_type": "varchar(10)"
+        },
+        {
+          "mssql": "Nominee1Id",
+          "pg": "nominee1_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "Nominee2Id",
+          "pg": "nominee2_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "InvestedAmount",
+          "pg": "invested_amount",
+          "pg_type": "numeric(11,2)"
+        },
+        {
+          "mssql": "InterestRate",
+          "pg": "interest_rate",
+          "pg_type": "numeric(4,2)"
+        },
+        {
+          "mssql": "StartDate",
+          "pg": "start_date",
+          "pg_type": "timestamp"
+        },
+        {
+          "mssql": "ExpectedMaturityDate",
+          "pg": "expected_maturity_date",
+          "pg_type": "timestamp"
+        },
+        {
+          "mssql": "PeriodYears",
+          "pg": "period_years",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "PeriodMonths",
+          "pg": "period_months",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "PeriodDays",
+          "pg": "period_days",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "ExpectedMaturityAmount",
+          "pg": "expected_maturity_amount",
+          "pg_type": "numeric(11,2)"
+        },
+        {
+          "mssql": "ExpectedInterestAmount",
+          "pg": "expected_interest_amount",
+          "pg_type": "numeric(11,2)"
+        },
+        {
+          "mssql": "ActualInterestAmount",
+          "pg": "actual_interest_amount",
+          "pg_type": "numeric(11,2)"
+        },
+        {
+          "mssql": "ActualMaturityDate",
+          "pg": "actual_maturity_date",
+          "pg_type": "timestamp"
+        },
+        {
+          "mssql": "ActualMaturityAmount",
+          "pg": "actual_maturity_amount",
+          "pg_type": "numeric(11,2)"
+        },
+        {
+          "mssql": "DepositCurrency",
+          "pg": "deposit_currency",
+          "pg_type": "varchar(10)"
+        },
+        {
+          "mssql": "DepositType",
+          "pg": "deposit_type",
+          "pg_type": "varchar(10)"
+        },
+        {
+          "mssql": "InterestPaymentFrequency",
+          "pg": "interest_payment_frequency",
+          "pg_type": "varchar(10)"
+        },
+        {
+          "mssql": "DepositPaymentFrequency",
+          "pg": "deposit_payment_frequency",
+          "pg_type": "varchar(10)"
+        },
+        {
+          "mssql": "ClosureType",
+          "pg": "closure_type",
+          "pg_type": "varchar(10)"
+        },
+        {
+          "mssql": "IsBookedOnline",
+          "pg": "is_booked_online",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "IsAutoRenewable",
+          "pg": "is_auto_renewable",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "IsRenewed",
+          "pg": "is_renewed",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "IsActive",
+          "pg": "is_active",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "IsPrematureWithdrawal",
+          "pg": "is_premature_withdrawal",
+          "pg_type": "boolean"
+        },
+        {
+          "mssql": "BrokerId",
+          "pg": "broker_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "Comments",
+          "pg": "comments",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "CreatedDate",
+          "pg": "created_date",
+          "pg_type": "timestamp"
+        },
+        {
+          "mssql": "ModifiedDate",
+          "pg": "modified_date",
+          "pg_type": "timestamp"
+        }
+      ]
+    },
+    "dbo.FactMutualFundTransactions": {
+      "mssql_table": "dbo.FactMutualFundTransactions",
+      "pg_table": "fact_mutual_fund_transactions",
+      "pk": {
+        "mssql": "ID",
+        "pg": "id"
+      },
+      "columns": [
+        {
+          "mssql": "ID",
+          "pg": "id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "FundId",
+          "pg": "fund_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "TransactionOrderHash",
+          "pg": "transaction_order_hash",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "Exchange",
+          "pg": "exchange",
+          "pg_type": "varchar(10)"
+        },
+        {
+          "mssql": "TransactionDate",
+          "pg": "transaction_date",
+          "pg_type": "timestamp"
+        },
+        {
+          "mssql": "TransactionType",
+          "pg": "transaction_type",
+          "pg_type": "varchar(10)"
+        },
+        {
+          "mssql": "RealizedAmount",
+          "pg": "realized_amount",
+          "pg_type": "numeric(11,2)"
+        },
+        {
+          "mssql": "TransactionAmount",
+          "pg": "transaction_amount",
+          "pg_type": "numeric(11,2)"
+        },
+        {
+          "mssql": "TransactionNAV",
+          "pg": "transaction_nav",
+          "pg_type": "numeric(11,4)"
+        },
+        {
+          "mssql": "TransactionUnits",
+          "pg": "transaction_units",
+          "pg_type": "numeric(11,4)"
+        },
+        {
+          "mssql": "TransactionSTT",
+          "pg": "transaction_stt",
+          "pg_type": "numeric(11,2)"
+        },
+        {
+          "mssql": "TransactionTDS",
+          "pg": "transaction_tds",
+          "pg_type": "numeric(11,2)"
+        },
+        {
+          "mssql": "TransactionStampDuty",
+          "pg": "transaction_stamp_duty",
+          "pg_type": "numeric(11,2)"
+        },
+        {
+          "mssql": "BrokerId",
+          "pg": "broker_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "OrderId",
+          "pg": "order_id",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "TradeId",
+          "pg": "trade_id",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "CreatedDate",
+          "pg": "created_date",
+          "pg_type": "timestamp"
+        },
+        {
+          "mssql": "ModifiedDate",
+          "pg": "modified_date",
+          "pg_type": "timestamp"
+        }
+      ]
+    },
+    "dbo.FactOtherContacts": {
+      "mssql_table": "dbo.FactOtherContacts",
+      "pg_table": "fact_other_contacts",
+      "pk": {
+        "mssql": "ID",
+        "pg": "id"
+      },
+      "columns": [
+        {
+          "mssql": "ID",
+          "pg": "id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "RecordType",
+          "pg": "record_type",
+          "pg_type": "varchar(50)"
+        },
+        {
+          "mssql": "ContactType",
+          "pg": "contact_type",
+          "pg_type": "varchar(50)"
+        },
+        {
+          "mssql": "RecordId",
+          "pg": "record_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "ContactValue",
+          "pg": "contact_value",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "CreatedDate",
+          "pg": "created_date",
+          "pg_type": "timestamp"
+        },
+        {
+          "mssql": "ModifiedDate",
+          "pg": "modified_date",
+          "pg_type": "timestamp"
+        }
+      ]
+    },
+    "dbo.FactStockTransactions": {
+      "mssql_table": "dbo.FactStockTransactions",
+      "pg_table": "fact_stock_transactions",
+      "pk": {
+        "mssql": "ID",
+        "pg": "id"
+      },
+      "columns": [
+        {
+          "mssql": "ID",
+          "pg": "id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "TradeOrderHash",
+          "pg": "trade_order_hash",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "HolderId",
+          "pg": "holder_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "Symbol",
+          "pg": "symbol",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "ISIN",
+          "pg": "isin",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "Exchange",
+          "pg": "exchange",
+          "pg_type": "varchar(10)"
+        },
+        {
+          "mssql": "TradeDate",
+          "pg": "trade_date",
+          "pg_type": "timestamp"
+        },
+        {
+          "mssql": "TradeType",
+          "pg": "trade_type",
+          "pg_type": "varchar(10)"
+        },
+        {
+          "mssql": "TradeAmount",
+          "pg": "trade_amount",
+          "pg_type": "numeric(11,2)"
+        },
+        {
+          "mssql": "TradePrice",
+          "pg": "trade_price",
+          "pg_type": "numeric(11,2)"
+        },
+        {
+          "mssql": "TradeQuantity",
+          "pg": "trade_quantity",
+          "pg_type": "numeric(11,2)"
+        },
+        {
+          "mssql": "NomineeId",
+          "pg": "nominee_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "LinkedEntityId",
+          "pg": "linked_entity_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "BrokerId",
+          "pg": "broker_id",
+          "pg_type": "integer"
+        },
+        {
+          "mssql": "OrderId",
+          "pg": "order_id",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "TradeId",
+          "pg": "trade_id",
+          "pg_type": "bytea"
+        },
+        {
+          "mssql": "CreatedDate",
+          "pg": "created_date",
+          "pg_type": "timestamp"
+        },
+        {
+          "mssql": "ModifiedDate",
+          "pg": "modified_date",
+          "pg_type": "timestamp"
+        }
+      ]
+    }
+  }
+}
