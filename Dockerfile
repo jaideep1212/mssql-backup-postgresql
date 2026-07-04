@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # src/ layout: the package lives at src/replicator/. Put src on the path so
 # "python -m replicator.run_once" resolves.
 COPY src/ ./src/
-ENV PYTHONPATH=/app/src
+ENV PYTHONPATH=/app/src/consumer
 
 # ON-DEMAND MODEL:
 # The container runs IDLE (no timer loop). The laptop triggers one cycle via:
