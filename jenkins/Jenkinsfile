@@ -1,11 +1,128 @@
+// =============================================================
+// Jenkinsfile  -  CI/CD for the mssql-backup-postgresql replicator.
+//
+// Runs on Jenkins ON THE PI (aarch64, Docker socket mounted), so image builds
+// are native ARM (no buildx) and "deploy" is local docker compose - no registry,
+// no SSH. Docker Hub is intentionally not used.
+//
+// Behaviour:
+//   * On a PR  -> run unit tests (pytest). This is the merge gate: a red build
+//                 blocks the merge via branch protection.
+//   * On main  -> run tests, build the image locally, redeploy the container.
+//
+// Path-aware: consumer changes drive the build/deploy. SQL + schema deploys
+// (mssql/**, postgres/**) are intentionally MANUAL - they need the firewall
+// port open and change rarely - so this pipeline does not run them. A stub
+// stage documents where they would go if you later automate them.
+// =============================================================
+
 pipeline {
     agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()          // never build the same job twice at once
+        timeout(time: 30, unit: 'MINUTES')
+    }
+
+    environment {
+        IMAGE_NAME = 'mssql-backup-replicator'
+        IMAGE_TAG  = "${env.BUILD_NUMBER}"
+        // The compose working dir on the Pi (where docker-compose.yml + .env live).
+        DEPLOY_DIR = "${env.HOME}/replicator"
+    }
+
     stages {
+
         stage('Checkout') {
             steps { checkout scm }
         }
-        stage('Smoke test') {
-            steps { echo 'Pipeline wired up correctly.' }
+
+        // ---- Always run tests (PR gate AND pre-deploy on main) ----
+        stage('Unit tests') {
+            when {
+                anyOf {
+                    changeRequest()                    // every PR
+                    branch 'main'                      // and on main before deploy
+                }
+            }
+            steps {
+                sh '''
+                    set -e
+                    # Run pytest inside a throwaway python container so the Jenkins
+                    # agent needs no python/pyodbc itself. The tests stub the DB
+                    # drivers, so no database is required.
+                    docker run --rm -v "$WORKSPACE/consumer":/w -w /w python:3.12-slim \
+                        sh -c "pip install -q -r requirements-dev.txt && python -m pytest -q"
+                '''
+            }
+        }
+
+        // ---- Build + deploy only on main, only when the consumer changed ----
+        stage('Build image') {
+            when {
+                allOf {
+                    branch 'main'
+                    changeset 'consumer/**'
+                }
+            }
+            steps {
+                sh '''
+                    set -e
+                    # Build natively on the Pi (aarch64). Build context is the repo
+                    # root (Dockerfile + src/ live there). Tag with the build number
+                    # AND latest so the compose (which uses latest) picks it up.
+                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest .
+                '''
+            }
+        }
+
+        stage('Deploy replicator') {
+            when {
+                allOf {
+                    branch 'main'
+                    changeset 'consumer/**'
+                }
+            }
+            steps {
+                sh '''
+                    set -e
+                    # Redeploy the container from the compose working dir on the Pi.
+                    # The image is already local (just built); compose recreates the
+                    # container to pick up the new :latest image.
+                    cd "${DEPLOY_DIR}"
+                    docker compose up -d --force-recreate
+                    # sanity: container is up (idle, on-demand model)
+                    docker ps --format '{{.Names}}\t{{.Status}}' | grep replicator-test
+                '''
+            }
+        }
+
+        // ---- SQL / schema deploys: intentionally manual (documented, not run) ----
+        stage('DB deploy (manual - not run here)') {
+            when { branch 'main' }
+            steps {
+                echo '''
+                SQL Server (mssql/**) and PostgreSQL (postgres/**) changes are
+                deployed manually, because they need the firewall port open and
+                change rarely:
+                  mssql/     -> run 01_backup_outbox_table.sql + instrumented SPs
+                                against LocalTestDB (sqlcmd), with the port open.
+                  postgres/  -> run schema.sql + permissions.sql against
+                                household_test (docker exec postgres psql ...).
+                To automate later: add stages here gated on changeset "mssql/**"
+                and "postgres/**", with credentials() for the DB logins.
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "OK: build ${env.BUILD_NUMBER} on ${env.BRANCH_NAME}"
+        }
+        failure {
+            echo "FAILED: build ${env.BUILD_NUMBER} on ${env.BRANCH_NAME} - check the stage above."
         }
     }
 }
