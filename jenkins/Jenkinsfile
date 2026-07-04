@@ -47,14 +47,17 @@ pipeline {
                 }
             }
             steps {
-                sh '''
+                sh """
                     set -e
                     # Run pytest inside a throwaway python container so the Jenkins
                     # agent needs no python/pyodbc itself. The tests stub the DB
-                    # drivers, so no database is required.
-                    docker run --rm -v "$WORKSPACE/consumer":/w -w /w python:3.12-slim \
+                    # drivers, so no database is required. The whole command is one
+                    # string to 'sh -c' so the && stays inside the container shell.
+                    # Repo layout: requirements-dev.txt and tests/ are at the repo
+                    # root, so we mount the whole workspace as the working dir.
+                    docker run --rm -v "\$WORKSPACE":/w -w /w python:3.12-slim \\
                         sh -c "pip install -q -r requirements-dev.txt && python -m pytest -q"
-                '''
+                """
             }
         }
 
@@ -63,7 +66,11 @@ pipeline {
             when {
                 allOf {
                     branch 'main'
-                    changeset 'consumer/**'
+                    anyOf {
+                        changeset pattern: 'src/**', comparator: 'ANT'
+                        changeset pattern: 'Dockerfile', comparator: 'ANT'
+                        changeset pattern: 'requirements.txt', comparator: 'ANT'
+                    }
                 }
             }
             steps {
@@ -81,7 +88,11 @@ pipeline {
             when {
                 allOf {
                     branch 'main'
-                    changeset 'consumer/**'
+                    anyOf {
+                        changeset pattern: 'src/**', comparator: 'ANT'
+                        changeset pattern: 'Dockerfile', comparator: 'ANT'
+                        changeset pattern: 'requirements.txt', comparator: 'ANT'
+                    }
                 }
             }
             steps {
