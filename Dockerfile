@@ -1,4 +1,4 @@
-# Multi-arch: builds natively on the Pi (arm64) or via buildx elsewhere.
+# Builds natively on the Pi (arm64) - Jenkins runs on the Pi, so no buildx needed.
 FROM python:3.12-slim
 
 # ODBC Driver 18 for SQL Server + unixODBC (Debian bookworm, arm64-compatible)
@@ -16,7 +16,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY consumer/ ./consumer/
 
-# LANE and all connection env vars are supplied at runtime (compose / Jenkins).
-ENTRYPOINT ["python", "-m", "consumer.main"]
+# src/ layout: the package lives at src/replicator/. Put src on the path so
+# "python -m replicator.run_once" resolves.
+COPY src/ ./src/
+ENV PYTHONPATH=/app/src
+
+# ON-DEMAND MODEL:
+# The container runs IDLE (no timer loop). The laptop triggers one cycle via:
+#     docker exec replicator-test python -m replicator.run_once
+# so the main process just keeps the container alive and does nothing itself.
+#
+# (To revert to the self-timed loop, set this back to:
+#   CMD ["python", "-m", "replicator.main"]  )
+CMD ["sleep", "infinity"]
