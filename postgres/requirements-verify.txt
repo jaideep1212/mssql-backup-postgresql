@@ -1,0 +1,13 @@
+# Dependencies for the MANUAL verification tool (verify_decrypt_export.py).
+#
+# This is intentionally SEPARATE from the repo-root requirements.txt, which
+# defines the replicator container's runtime deps. The replicator NEVER decrypts
+# data, so cryptography must not be in the replicator image. These deps are only
+# for the standalone tool that reads the replicated Postgres data and decrypts it
+# for verification.
+#
+# Install on the Pi where you run the tool:
+#     pip install -r tools/requirements.txt
+
+psycopg[binary]
+cryptography
