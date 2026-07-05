@@ -42,8 +42,10 @@ def test_missing_lane_exits(clean_env):
 def test_prod_lane_reads_prod_suffixed_vars(clean_env):
     set_valid_test_env(clean_env)
     clean_env.setenv("LANE", "PROD")
+    clean_env.setenv("MSSQL_USER_PROD", "svcreader")
     clean_env.setenv("MSSQL_DB_PROD", "LocalProdDB")
     clean_env.setenv("MSSQL_PASSWORD_PROD", "p")
+    clean_env.setenv("PG_USER_PROD", "svcbackup")
     clean_env.setenv("PG_DB_PROD", "household_prod")
     clean_env.setenv("PG_PASSWORD_PROD", "p2")
     cfg = Config()
@@ -112,7 +114,7 @@ def test_connstr_windows_auth_uses_trusted_connection(clean_env):
     set_valid_test_env(clean_env)
     clean_env.setenv("MSSQL_AUTH", "windows")
     # windows auth should NOT require user/password
-    clean_env.delenv("MSSQL_USER", raising=False)
+    clean_env.delenv("MSSQL_USER_TEST", raising=False)
     clean_env.delenv("MSSQL_PASSWORD_TEST", raising=False)
     cfg = Config()
     s = cfg.mssql_odbc_connstr()
