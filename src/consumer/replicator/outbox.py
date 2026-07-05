@@ -12,12 +12,11 @@ insert is never marked done without being backed up.
 
 All statements run against SQL Server. State codes: 0=pending, 2=claimed, 1=done.
 """
-
 from __future__ import annotations
 import json
 import logging
 
-log = logging.getLogger("consumer.outbox")
+log = logging.getLogger("replicator.outbox")
 
 
 def reap_stale(cursor, stale_minutes: int) -> int:
@@ -39,8 +38,12 @@ def claim_pending(cursor) -> list[tuple[int, str]]:
     Atomically claim all pending rows and return [(EventId, TableNames_json), ...].
     The UPDATE ... OUTPUT is a single locked operation: capture == claim.
     """
+    # SET NOCOUNT ON suppresses the UPDATE's "rows affected" count so pyodbc
+    # lands directly on the final SELECT's result set. Without it, fetchall()
+    # sees the UPDATE's non-query response and raises "No results / not a query".
     cursor.execute(
         """
+        SET NOCOUNT ON;
         DECLARE @claimed TABLE (EventId BIGINT PRIMARY KEY, TableNames NVARCHAR(MAX));
         UPDATE dbo.BackupOutbox
         SET BackupDone = 2, ModifiedUtc = SYSUTCDATETIME(), Attempts = Attempts + 1
