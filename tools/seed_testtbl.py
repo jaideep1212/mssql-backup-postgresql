@@ -43,10 +43,28 @@ import pyodbc
 from cryptography.fernet import Fernet
 
 
+def _load_dotenv():
+    """
+    Minimal .env loader (no external dependency). Reads a .env file sitting next
+    to this script and sets any vars not already in the environment. Each line is
+    KEY=VALUE; blank lines and #comments are ignored. Values already exported in
+    the environment take precedence (setdefault).
+    """
+    env_path = Path(__file__).parent / ".env"
+    if not env_path.exists():
+        return
+    for line in env_path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        os.environ.setdefault(k.strip(), v.strip())
+
+
 def _env(name, default=None, required=False):
     v = os.environ.get(name, default)
     if required and not v:
-        sys.stderr.write(f"FATAL: {name} not set\n")
+        sys.stderr.write(f"FATAL: {name} not set (checked environment and .env)\n")
         sys.exit(2)
     return v
 
@@ -65,6 +83,7 @@ def connstr() -> str:
 
 
 def main() -> int:
+    _load_dotenv()
     key = _env("ENCRYPTION_KEY_TEST", required=True)
     f = Fernet(key.encode() if isinstance(key, str) else key)
 
