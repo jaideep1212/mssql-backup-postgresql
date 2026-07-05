@@ -18,7 +18,7 @@ IF OBJECT_ID('dbo.TestTbl', 'U') IS NOT NULL
 GO
 
 CREATE TABLE dbo.TestTbl (
-    Id           INT IDENTITY(1,1) PRIMARY KEY,   -- INT IDENTITY, like the real tables
+    ID           INT IDENTITY(1,1) PRIMARY KEY,   -- INT IDENTITY, like the real tables
     TextField    NVARCHAR(200)   NULL,            -- plain unicode text
     HashField    VARBINARY(64)   NULL,            -- e.g. a SHA-256 hash (-> hex downstream)
     EncField     VARBINARY(MAX)  NULL,            -- Fernet-encrypted bytes (-> decrypt downstream)

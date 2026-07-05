@@ -126,10 +126,10 @@ def main() -> int:
     exp_path.write_text(json.dumps(expected, indent=2, ensure_ascii=False))
 
     # show what got inserted
-    cur.execute("SELECT Id, TextField, DATALENGTH(EncField) AS enc_len FROM dbo.TestTbl ORDER BY Id;")
+    cur.execute("SELECT ID, TextField, DATALENGTH(EncField) AS enc_len FROM dbo.TestTbl ORDER BY ID;")
     print("Seeded dbo.TestTbl:")
     for r in cur.fetchall():
-        print(f"  Id={r[0]}  text={r[1]!r}  enc_bytes={r[2]}")
+        print(f"  ID={r[0]}  text={r[1]!r}  enc_bytes={r[2]}")
     print(f"\nExpected values written to {exp_path}")
     print("Next: insert an outbox row for dbo.TestTbl and trigger a cycle.")
 
