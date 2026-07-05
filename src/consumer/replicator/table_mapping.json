@@ -1154,6 +1154,21 @@
           "pg_type": "timestamp"
         }
       ]
+    },
+    "dbo.TestTbl": {
+      "mssql_table": "dbo.TestTbl",
+      "pg_table": "test_tbl",
+      "pk": { "mssql": "ID", "pg": "id" },
+      "columns": [
+        { "mssql": "ID",           "pg": "id",            "pg_type": "bigint" },
+        { "mssql": "TextField",    "pg": "text_field",    "pg_type": "text" },
+        { "mssql": "HashField",    "pg": "hash_field",    "pg_type": "bytea" },
+        { "mssql": "EncField",     "pg": "enc_field",     "pg_type": "bytea" },
+        { "mssql": "DateField",    "pg": "date_field",    "pg_type": "timestamp" },
+        { "mssql": "DecimalField", "pg": "decimal_field", "pg_type": "numeric" },
+        { "mssql": "IntField",     "pg": "int_field",     "pg_type": "integer" },
+        { "mssql": "BoolField",    "pg": "bool_field",    "pg_type": "boolean" }
+      ]
     }
   }
 }

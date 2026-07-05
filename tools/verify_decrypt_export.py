@@ -68,11 +68,13 @@ ENCRYPTED_FIELDS = {
         "contact_mobile_no", "contact_phone_no", "work_email_id", "work_mobile_no",
         "work_phone_no", "expired_date", "pan", "aadhar", "tin",
     ],
+    "test_tbl": ["enc_field"],             # the all-types test table's encrypted column
 }
 
 HASH_FIELDS = {
     "dim_users": ["user_name_hash"],       # SHA-256 hash -> hex
     "dim_users_s": [],
+    "test_tbl": ["hash_field"],            # the test table's hash column -> hex
 }
 
 

@@ -5,9 +5,9 @@ import pytest
 from replicator import mapping
 
 
-def test_all_11_tables_present():
+def test_all_expected_tables_present():
     tables = mapping.replicated_tables()
-    assert len(tables) == 11
+    assert len(tables) == 12
     assert "dbo.DimUsers" in tables
     assert "dbo.FactStockTransactions" in tables
 
