@@ -47,11 +47,8 @@ pipeline {
                 }
             }
             steps {
-                sh '''
-                    set -e
-                    docker run --rm -v "$WORKSPACE":/w -w /w python:3.12-slim \
-                        sh -c 'pip install -q -r requirements-dev.txt && python -m pytest -q'
-                '''
+                    writeFile file: 'ci_test.sh', text: 'pip install -q -r requirements-dev.txt && python -m pytest -q'
+                    sh 'docker run --rm -v "$WORKSPACE":/w -w /w python:3.12-slim sh /w/ci_test.sh'
             }
         }
 
