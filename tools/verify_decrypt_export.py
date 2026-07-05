@@ -76,15 +76,42 @@ HASH_FIELDS = {
 }
 
 
-def load_key() -> Fernet:
-    key = os.environ.get("ENCRYPTION_KEY_TEST")
-    if not key:
-        sys.stderr.write("FATAL: ENCRYPTION_KEY_TEST is not set in the environment.\n")
+def _load_dotenv():
+    """
+    Minimal .env loader (no external dependency). Looks for a .env file next to
+    this script and sets any vars not already in the environment. Each line is
+    KEY=VALUE; blank lines and #comments are ignored.
+    """
+    env_path = Path(__file__).parent / ".env"
+    if not env_path.exists():
+        return
+    for line in env_path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        os.environ.setdefault(k.strip(), v.strip())
+
+
+def _lane_var(base: str, lane: str, default=None, required=False):
+    """
+    Resolve a per-lane suffixed env var, e.g. base='PG_USER', lane='TEST'
+    -> reads PG_USER_TEST. Matches the replicator's config convention.
+    """
+    name = f"{base}_{lane}"
+    val = os.environ.get(name, default)
+    if required and not val:
+        sys.stderr.write(f"FATAL: required env var {name} is not set\n")
         sys.exit(2)
+    return val
+
+
+def load_key(lane: str) -> Fernet:
+    key = _lane_var("ENCRYPTION_KEY", lane, required=True)
     try:
         return Fernet(key.encode() if isinstance(key, str) else key)
     except Exception as e:
-        sys.stderr.write(f"FATAL: ENCRYPTION_KEY_TEST is not a valid Fernet key: {e}\n")
+        sys.stderr.write(f"FATAL: ENCRYPTION_KEY_{lane} is not a valid Fernet key: {e}\n")
         sys.exit(2)
 
 
@@ -168,11 +195,27 @@ def export_table(cur, table: str, fernet: Fernet, out_dir: Path) -> int:
 def main() -> int:
     ap = argparse.ArgumentParser(description="Decrypt replicated Postgres tables to CSV (verification).")
     ap.add_argument("--out", default="./decrypted", help="output directory for CSVs")
+    ap.add_argument("--lane", default=os.environ.get("LANE", "TEST"),
+                    help="lane TEST or PROD (default: TEST); selects the _TEST/_PROD env vars")
+    ap.add_argument("--test", action="store_true",
+                    help="shorthand for --lane TEST: suffix _TEST to all env var names")
     ap.add_argument("--tables", nargs="*", default=["dim_users", "dim_users_s"],
                     help="tables to export (default: dim_users dim_users_s)")
     args = ap.parse_args()
 
-    fernet = load_key()
+    _load_dotenv()
+
+    # --test forces the TEST lane (overrides --lane / LANE if both given).
+    if args.test:
+        lane = "TEST"
+    else:
+        lane = args.lane.upper()
+    if lane not in ("TEST", "PROD"):
+        sys.stderr.write(f"FATAL: lane must be TEST or PROD, got {lane}\n")
+        return 2
+    print(f"lane = {lane}  (reading *_{lane} env vars)")
+
+    fernet = load_key(lane)
 
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -180,9 +223,9 @@ def main() -> int:
     conn_kwargs = dict(
         host=os.environ.get("PG_HOST", "localhost"),
         port=os.environ.get("PG_PORT", "5432"),
-        dbname=os.environ.get("PG_DB", "household_test"),
-        user=os.environ.get("PG_USER", "admin"),
-        password=os.environ.get("PG_PASSWORD", ""),
+        dbname=_lane_var("PG_DB", lane, default="household_test"),
+        user=_lane_var("PG_USER", lane, default="admin"),
+        password=_lane_var("PG_PASSWORD", lane, required=True),
     )
 
     print(f"connecting to postgres {conn_kwargs['host']}:{conn_kwargs['port']}/{conn_kwargs['dbname']} as {conn_kwargs['user']}")
