@@ -2,7 +2,7 @@
 test_mapping.py  -  the SQL Server <-> PostgreSQL field map.
 """
 import pytest
-from consumer.replicator import mapping
+from replicator import mapping
 
 
 def test_all_expected_tables_present():

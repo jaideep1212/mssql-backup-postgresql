@@ -4,7 +4,7 @@ test_config.py  -  Config env parsing, lane pinning, and connection-string build
 import pytest
 from conftest import set_valid_test_env
 
-from replicator.config import Config
+from replicator import Config
 
 
 # ---------- lane pinning ----------
