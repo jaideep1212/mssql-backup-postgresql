@@ -57,8 +57,19 @@ from cryptography.fernet import Fernet, InvalidToken
 # For each Postgres table: which columns are Fernet-encrypted (decrypt) and
 # which are hash/binary (hex-encode for display).
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Field classification per table (PostgreSQL snake_case column names).
+#   ENCRYPTED_FIELDS: Fernet-encrypted -> decrypt to plaintext
+#   HASH_FIELDS:      one-way hash bytes -> hex string
+#   (everything else passes through as-is)
+#
+# Sourced from the original export script's ENCRYPTED_FIELDS / BINARY_FIELDS and
+# the mapper class definitions (AccountFieldMapper, DepositFieldMapper,
+# MutualFundFieldMapper, StockFieldMapper). All 11 production tables plus the
+# TestTbl mirror are classified.
+# ---------------------------------------------------------------------------
 ENCRYPTED_FIELDS = {
-    "dim_users": [],                       # aggregate table: no encrypted fields
+    "dim_users": [],
     "dim_users_s": [
         "first_name", "last_name", "birth_date", "birth_city", "birth_country",
         "marriage_date", "current_address_line1", "current_address_line2",
@@ -68,12 +79,46 @@ ENCRYPTED_FIELDS = {
         "contact_mobile_no", "contact_phone_no", "work_email_id", "work_mobile_no",
         "work_phone_no", "expired_date", "pan", "aadhar", "tin",
     ],
+    "dim_entities": [
+        "entity_name", "entity_branch", "address_line1", "address_line2", "city",
+        "post_code", "country", "customer_care_email_id", "customer_care_phone_no",
+        "customer_care_website", "swift", "ifsc", "micr", "iban",
+    ],
+    "fact_aliases": ["alias_name"],
+    "fact_other_contacts": ["contact_value"],
+    "fact_account_broker_mappings": [],
+    "fact_stock_transactions": ["trade_id", "order_id", "isin", "symbol"],
+
+    # Filled from the mapper class definitions (provided separately).
+    "dim_accounts": [
+        "account_no", "first_holder_address", "cif", "open_year",
+        "email_id", "contact_no", "comments",
+    ],
+    "fact_deposits": ["deposit_no", "comments"],
+    "dim_mutual_funds": [
+        "folio_no", "scheme_name", "isin", "scheme_code",
+        "scheme_category", "comments",
+    ],
+    "fact_mutual_fund_transactions": ["trade_id", "order_id"],
+
     "test_tbl": ["enc_field"],             # the all-types test table's encrypted column
 }
 
 HASH_FIELDS = {
-    "dim_users": ["user_name_hash"],       # SHA-256 hash -> hex
+    "dim_users": ["user_name_hash"],
     "dim_users_s": [],
+    "dim_entities": ["entity_name_hash"],
+    "fact_aliases": [],
+    "fact_other_contacts": [],
+    "fact_account_broker_mappings": [],
+    "fact_deposits": ["deposit_no_hash"],
+    "fact_stock_transactions": ["trade_order_hash"],
+
+    # Filled from the mapper class definitions (provided separately).
+    "dim_accounts": ["account_no_hash"],
+    "dim_mutual_funds": ["isin_folio_holder_hash"],
+    "fact_mutual_fund_transactions": ["transaction_order_hash"],
+
     "test_tbl": ["hash_field"],            # the test table's hash column -> hex
 }
 
@@ -201,7 +246,7 @@ def main() -> int:
                     help="lane TEST or PROD (default: TEST); selects the _TEST/_PROD env vars")
     ap.add_argument("--test", action="store_true",
                     help="shorthand for --lane TEST: suffix _TEST to all env var names")
-    ap.add_argument("--tables", nargs="*", default=["dim_users", "dim_users_s"],
+    ap.add_argument("--tables", nargs="*", default=["dim_users", "dim_users_s", "dim_accounts", "dim_entities", "dim_mutual_funds", "fact_account_broker_mappings", "fact_aliases", "fact_deposits", "fact_mutual_fund_transactions", "fact_other_contacts", "fact_stock_transactions"],
                     help="tables to export (default: dim_users dim_users_s)")
     args = ap.parse_args()
 
