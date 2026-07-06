@@ -30,6 +30,7 @@ firewall open, or the laptop. Reads DB + key config from the same .env style.
     export MSSQL_DB_TEST=LocalTestDB
     python seed_testtbl.py
 """
+
 from __future__ import annotations
 import hashlib
 import json
@@ -90,15 +91,36 @@ def main() -> int:
     # ---- Define the test rows with KNOWN plaintext for the encrypted field ----
     # (text, enc_plaintext, hash_input, date, decimal, int, bool)
     rows = [
-        ("Simple ASCII",      "Hello World",              b"hash-input-1",
-         datetime(2024, 3, 15, 12, 34, 56, 789000), Decimal("12345.6789"), 42, True),
-        ("Unicode Bjork",     "Björk Ödegård åäö",        b"hash-input-2",
-         datetime(2020, 1, 1, 0, 0, 0, 1000),       Decimal("0.0001"),      0,  False),
-        ("Empty enc",         "",                          b"",
-         datetime(1999, 12, 31, 23, 59, 59, 997000), Decimal("-999.9999"), -7, True),
+        (
+            "Simple ASCII",
+            "Hello World",
+            b"hash-input-1",
+            datetime(2024, 3, 15, 12, 34, 56, 789000),
+            Decimal("12345.6789"),
+            42,
+            True,
+        ),
+        (
+            "Unicode Bjork",
+            "Björk Ödegård åäö",
+            b"hash-input-2",
+            datetime(2020, 1, 1, 0, 0, 0, 1000),
+            Decimal("0.0001"),
+            0,
+            False,
+        ),
+        (
+            "Empty enc",
+            "",
+            b"",
+            datetime(1999, 12, 31, 23, 59, 59, 997000),
+            Decimal("-999.9999"),
+            -7,
+            True,
+        ),
     ]
 
-    expected = []   # what each row's enc_field must decrypt back to
+    expected = []  # what each row's enc_field must decrypt back to
 
     conn = pyodbc.connect(connstr())
     cur = conn.cursor()
@@ -118,25 +140,42 @@ def main() -> int:
                 (TextField, HashField, EncField, DateField, DecimalField, IntField, BoolField)
             VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            text, hash_bytes, enc_bytes, dt, dec, iv, bv,
+            text,
+            hash_bytes,
+            enc_bytes,
+            dt,
+            dec,
+            iv,
+            bv,
         )
-        expected.append({
-            "row": i,
-            "text_field": text,
-            "enc_plaintext": enc_plain,          # what enc_field must decrypt to
-            "hash_hex": hash_bytes.hex(),         # what hash_field must hex to
-            "decimal": str(dec),
-            "int": iv,
-            "bool": bv,
-        })
+        expected.append(
+            {
+                "row": i,
+                "text_field": text,
+                "enc_plaintext": enc_plain,  # what enc_field must decrypt to
+                "hash_hex": hash_bytes.hex(),  # what hash_field must hex to
+                "decimal": str(dec),
+                "int": iv,
+                "bool": bv,
+            }
+        )
 
     # a fully-NULL row (NULL handling)
     cur.execute(
         "INSERT INTO dbo.TestTbl (TextField, HashField, EncField, DateField, DecimalField, IntField, BoolField) "
         "VALUES (NULL, NULL, NULL, NULL, NULL, NULL, NULL);"
     )
-    expected.append({"row": len(rows) + 1, "text_field": None, "enc_plaintext": "",
-                     "hash_hex": "", "decimal": None, "int": None, "bool": None})
+    expected.append(
+        {
+            "row": len(rows) + 1,
+            "text_field": None,
+            "enc_plaintext": "",
+            "hash_hex": "",
+            "decimal": None,
+            "int": None,
+            "bool": None,
+        }
+    )
 
     conn.commit()
 
@@ -145,7 +184,9 @@ def main() -> int:
     exp_path.write_text(json.dumps(expected, indent=2, ensure_ascii=False))
 
     # show what got inserted
-    cur.execute("SELECT ID, TextField, DATALENGTH(EncField) AS enc_len FROM dbo.TestTbl ORDER BY ID;")
+    cur.execute(
+        "SELECT ID, TextField, DATALENGTH(EncField) AS enc_len FROM dbo.TestTbl ORDER BY ID;"
+    )
     print("Seeded dbo.TestTbl:")
     for r in cur.fetchall():
         print(f"  ID={r[0]}  text={r[1]!r}  enc_bytes={r[2]}")

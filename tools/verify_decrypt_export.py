@@ -38,6 +38,7 @@ Output
   ./decrypted/dim_users_decrypted.csv
   ./decrypted/dim_users_s_decrypted.csv
 """
+
 from __future__ import annotations
 
 import argparse
@@ -71,37 +72,74 @@ from cryptography.fernet import Fernet, InvalidToken
 ENCRYPTED_FIELDS = {
     "dim_users": [],
     "dim_users_s": [
-        "first_name", "last_name", "birth_date", "birth_city", "birth_country",
-        "marriage_date", "current_address_line1", "current_address_line2",
-        "current_city", "current_post_code", "current_country",
-        "permanent_address_line1", "permanent_address_line2", "permanent_city",
-        "permanent_post_code", "permanent_country", "contact_email_id",
-        "contact_mobile_no", "contact_phone_no", "work_email_id", "work_mobile_no",
-        "work_phone_no", "expired_date", "pan", "aadhar", "tin",
+        "first_name",
+        "last_name",
+        "birth_date",
+        "birth_city",
+        "birth_country",
+        "marriage_date",
+        "current_address_line1",
+        "current_address_line2",
+        "current_city",
+        "current_post_code",
+        "current_country",
+        "permanent_address_line1",
+        "permanent_address_line2",
+        "permanent_city",
+        "permanent_post_code",
+        "permanent_country",
+        "contact_email_id",
+        "contact_mobile_no",
+        "contact_phone_no",
+        "work_email_id",
+        "work_mobile_no",
+        "work_phone_no",
+        "expired_date",
+        "pan",
+        "aadhar",
+        "tin",
     ],
     "dim_entities": [
-        "entity_name", "entity_branch", "address_line1", "address_line2", "city",
-        "post_code", "country", "customer_care_email_id", "customer_care_phone_no",
-        "customer_care_website", "swift", "ifsc", "micr", "iban",
+        "entity_name",
+        "entity_branch",
+        "address_line1",
+        "address_line2",
+        "city",
+        "post_code",
+        "country",
+        "customer_care_email_id",
+        "customer_care_phone_no",
+        "customer_care_website",
+        "swift",
+        "ifsc",
+        "micr",
+        "iban",
     ],
     "fact_aliases": ["alias_name"],
     "fact_other_contacts": ["contact_value"],
     "fact_account_broker_mappings": [],
     "fact_stock_transactions": ["trade_id", "order_id", "isin", "symbol"],
-
     # Filled from the mapper class definitions (provided separately).
     "dim_accounts": [
-        "account_no", "first_holder_address", "cif", "open_year",
-        "email_id", "contact_no", "comments",
+        "account_no",
+        "first_holder_address",
+        "cif",
+        "open_year",
+        "email_id",
+        "contact_no",
+        "comments",
     ],
     "fact_deposits": ["deposit_no", "comments"],
     "dim_mutual_funds": [
-        "folio_no", "scheme_name", "isin", "scheme_code",
-        "scheme_category", "comments",
+        "folio_no",
+        "scheme_name",
+        "isin",
+        "scheme_code",
+        "scheme_category",
+        "comments",
     ],
     "fact_mutual_fund_transactions": ["trade_id", "order_id"],
-
-    "test_tbl": ["enc_field"],             # the all-types test table's encrypted column
+    "test_tbl": ["enc_field"],  # the all-types test table's encrypted column
 }
 
 HASH_FIELDS = {
@@ -113,13 +151,11 @@ HASH_FIELDS = {
     "fact_account_broker_mappings": [],
     "fact_deposits": ["deposit_no_hash"],
     "fact_stock_transactions": ["trade_order_hash"],
-
     # Filled from the mapper class definitions (provided separately).
     "dim_accounts": ["account_no_hash"],
     "dim_mutual_funds": ["isin_folio_holder_hash"],
     "fact_mutual_fund_transactions": ["transaction_order_hash"],
-
-    "test_tbl": ["hash_field"],            # the test table's hash column -> hex
+    "test_tbl": ["hash_field"],  # the test table's hash column -> hex
 }
 
 
@@ -158,7 +194,9 @@ def load_key(lane: str) -> Fernet:
     try:
         return Fernet(key.encode() if isinstance(key, str) else key)
     except Exception as e:
-        sys.stderr.write(f"FATAL: ENCRYPTION_KEY_{lane} is not a valid Fernet key: {e}\n")
+        sys.stderr.write(
+            f"FATAL: ENCRYPTION_KEY_{lane} is not a valid Fernet key: {e}\n"
+        )
         sys.exit(2)
 
 
@@ -240,14 +278,38 @@ def export_table(cur, table: str, fernet: Fernet, out_dir: Path) -> int:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Decrypt replicated Postgres tables to CSV (verification).")
+    ap = argparse.ArgumentParser(
+        description="Decrypt replicated Postgres tables to CSV (verification)."
+    )
     ap.add_argument("--out", default="./decrypted", help="output directory for CSVs")
-    ap.add_argument("--lane", default=os.environ.get("LANE", "TEST"),
-                    help="lane TEST or PROD (default: TEST); selects the _TEST/_PROD env vars")
-    ap.add_argument("--test", action="store_true",
-                    help="shorthand for --lane TEST: suffix _TEST to all env var names")
-    ap.add_argument("--tables", nargs="*", default=["dim_users", "dim_users_s", "dim_accounts", "dim_entities", "dim_mutual_funds", "fact_account_broker_mappings", "fact_aliases", "fact_deposits", "fact_mutual_fund_transactions", "fact_other_contacts", "fact_stock_transactions"],
-                    help="tables to export (default: dim_users dim_users_s)")
+    ap.add_argument(
+        "--lane",
+        default=os.environ.get("LANE", "TEST"),
+        help="lane TEST or PROD (default: TEST); selects the _TEST/_PROD env vars",
+    )
+    ap.add_argument(
+        "--test",
+        action="store_true",
+        help="shorthand for --lane TEST: suffix _TEST to all env var names",
+    )
+    ap.add_argument(
+        "--tables",
+        nargs="*",
+        default=[
+            "dim_users",
+            "dim_users_s",
+            "dim_accounts",
+            "dim_entities",
+            "dim_mutual_funds",
+            "fact_account_broker_mappings",
+            "fact_aliases",
+            "fact_deposits",
+            "fact_mutual_fund_transactions",
+            "fact_other_contacts",
+            "fact_stock_transactions",
+        ],
+        help="tables to export (default: dim_users dim_users_s)",
+    )
     args = ap.parse_args()
 
     _load_dotenv()
@@ -275,7 +337,9 @@ def main() -> int:
         password=_lane_var("PG_PASSWORD", lane, required=True),
     )
 
-    print(f"connecting to postgres {conn_kwargs['host']}:{conn_kwargs['port']}/{conn_kwargs['dbname']} as {conn_kwargs['user']}")
+    print(
+        f"connecting to postgres {conn_kwargs['host']}:{conn_kwargs['port']}/{conn_kwargs['dbname']} as {conn_kwargs['user']}"
+    )
     total = 0
     fail_markers = 0
     with psycopg.connect(**conn_kwargs) as conn:
@@ -290,16 +354,26 @@ def main() -> int:
         p = out_dir / f"{t}_decrypted.csv"
         if p.exists():
             text = p.read_text(encoding="utf-8-sig")
-            c = text.count("<DECRYPT-FAILED") + text.count("<DECRYPT-ERROR") + text.count("<NON-UTF8-BYTES")
+            c = (
+                text.count("<DECRYPT-FAILED")
+                + text.count("<DECRYPT-ERROR")
+                + text.count("<NON-UTF8-BYTES")
+            )
             fail_markers += c
             if c:
-                print(f"  WARNING: {p.name} has {c} decrypt-failure marker(s) - replication may have corrupted bytes!")
+                print(
+                    f"  WARNING: {p.name} has {c} decrypt-failure marker(s) - replication may have corrupted bytes!"
+                )
 
     print(f"\ndone: {total} row(s) across {len(args.tables)} table(s) -> {out_dir}")
     if fail_markers:
-        print(f"RESULT: {fail_markers} value(s) failed to decrypt. Replication integrity NOT confirmed.")
+        print(
+            f"RESULT: {fail_markers} value(s) failed to decrypt. Replication integrity NOT confirmed."
+        )
         return 1
-    print("RESULT: all encrypted values decrypted cleanly. Replication is byte-perfect and downstream-usable.")
+    print(
+        "RESULT: all encrypted values decrypted cleanly. Replication is byte-perfect and downstream-usable."
+    )
     return 0
 
 

@@ -12,6 +12,7 @@ insert is never marked done without being backed up.
 
 All statements run against SQL Server. State codes: 0=pending, 2=claimed, 1=done.
 """
+
 from __future__ import annotations
 import json
 import logging

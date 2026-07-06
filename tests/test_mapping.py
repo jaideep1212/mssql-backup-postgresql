@@ -1,6 +1,7 @@
 """
 test_mapping.py  -  the SQL Server <-> PostgreSQL field map.
 """
+
 import pytest
 from replicator import mapping
 
@@ -14,7 +15,10 @@ def test_all_expected_tables_present():
 
 def test_pg_table_name_translation():
     assert mapping.pg_table("dbo.DimUsers") == "dim_users"
-    assert mapping.pg_table("dbo.FactAccountBrokerMappings") == "fact_account_broker_mappings"
+    assert (
+        mapping.pg_table("dbo.FactAccountBrokerMappings")
+        == "fact_account_broker_mappings"
+    )
 
 
 def test_column_pairs_have_matching_lengths():
