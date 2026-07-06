@@ -6,12 +6,13 @@ functions are tested against a FakeCursor to lock in their SQL shape and, for
 claim_pending, to guard the specific pyodbc regression (SET NOCOUNT ON must be
 present so fetchall lands on the SELECT, not the UPDATE row count).
 """
-import pytest
+
 from conftest import FakeCursor
 from replicator import outbox
 
 
 # ---------- distinct_tables (pure logic) ----------
+
 
 def test_distinct_tables_dedupes_across_rows():
     claimed = [
@@ -36,7 +37,7 @@ def test_distinct_tables_skips_malformed_json():
     # a broken payload should be skipped, not crash the whole cycle
     claimed = [
         (1, '["dbo.DimUsers"]'),
-        (2, 'not-valid-json'),
+        (2, "not-valid-json"),
         (3, '["dbo.FactAliases"]'),
     ]
     result = outbox.distinct_tables(claimed)
@@ -49,6 +50,7 @@ def test_distinct_tables_result_is_sorted():
 
 
 # ---------- claim_pending (SQL shape + pyodbc regression guard) ----------
+
 
 def test_claim_pending_includes_set_nocount_on():
     # REGRESSION GUARD: without SET NOCOUNT ON, pyodbc raises
@@ -63,9 +65,9 @@ def test_claim_pending_claims_only_pending_rows():
     cur = FakeCursor(rows=[])
     outbox.claim_pending(cur)
     sql = cur.last_sql
-    assert "WHERE BackupDone = 0" in sql        # only pending
-    assert "BackupDone = 2" in sql              # flips to claimed
-    assert "OUTPUT inserted.EventId" in sql     # captures ids atomically
+    assert "WHERE BackupDone = 0" in sql  # only pending
+    assert "BackupDone = 2" in sql  # flips to claimed
+    assert "OUTPUT inserted.EventId" in sql  # captures ids atomically
 
 
 def test_claim_pending_parses_rows():
@@ -78,10 +80,11 @@ def test_claim_pending_parses_rows():
 
 # ---------- complete ----------
 
+
 def test_complete_no_ids_is_noop():
     cur = FakeCursor()
     outbox.complete(cur, [])
-    assert cur.executed == []                   # nothing issued
+    assert cur.executed == []  # nothing issued
 
 
 def test_complete_marks_done():
@@ -95,6 +98,7 @@ def test_complete_marks_done():
 
 # ---------- release ----------
 
+
 def test_release_no_ids_is_noop():
     cur = FakeCursor()
     outbox.release(cur, [], "err")
@@ -105,16 +109,17 @@ def test_release_returns_to_pending():
     cur = FakeCursor()
     outbox.release(cur, [5], "boom")
     sql = cur.last_sql
-    assert "BackupDone = 0" in sql              # back to pending
+    assert "BackupDone = 0" in sql  # back to pending
     assert "LastError" in sql
 
 
 # ---------- reap_stale ----------
 
+
 def test_reap_stale_targets_claimed_rows():
     cur = FakeCursor(rowcount=2)
     n = outbox.reap_stale(cur, 15)
     sql = cur.last_sql
-    assert "BackupDone = 2" in sql              # only stuck-claimed
-    assert "BackupDone = 0" in sql              # reset to pending
+    assert "BackupDone = 2" in sql  # only stuck-claimed
+    assert "BackupDone = 0" in sql  # reset to pending
     assert n == 2

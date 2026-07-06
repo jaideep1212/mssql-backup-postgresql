@@ -1,6 +1,7 @@
 """
 test_config.py  -  Config env parsing, lane pinning, and connection-string building.
 """
+
 import pytest
 from conftest import set_valid_test_env
 
@@ -8,6 +9,7 @@ from replicator.config import Config
 
 
 # ---------- lane pinning ----------
+
 
 def test_valid_test_lane_loads(clean_env):
     set_valid_test_env(clean_env)
@@ -19,7 +21,7 @@ def test_valid_test_lane_loads(clean_env):
 
 def test_lane_is_uppercased(clean_env):
     set_valid_test_env(clean_env)
-    clean_env.setenv("LANE", "test")           # lowercase
+    clean_env.setenv("LANE", "test")  # lowercase
     cfg = Config()
     assert cfg.lane == "TEST"
 
@@ -38,6 +40,7 @@ def test_missing_lane_exits(clean_env):
 
 
 # ---------- per-lane variable resolution ----------
+
 
 def test_prod_lane_reads_prod_suffixed_vars(clean_env):
     set_valid_test_env(clean_env)
@@ -63,6 +66,7 @@ def test_test_lane_does_not_read_prod_password(clean_env):
 
 # ---------- required vars ----------
 
+
 def test_missing_required_var_exits(clean_env):
     set_valid_test_env(clean_env)
     clean_env.delenv("MSSQL_HOST", raising=False)
@@ -71,6 +75,7 @@ def test_missing_required_var_exits(clean_env):
 
 
 # ---------- integer parsing ----------
+
 
 def test_interval_minutes_to_seconds(clean_env):
     set_valid_test_env(clean_env)
@@ -83,7 +88,7 @@ def test_interval_defaults_when_absent(clean_env):
     set_valid_test_env(clean_env)
     clean_env.delenv("INTERVAL_MINUTES", raising=False)
     cfg = Config()
-    assert cfg.interval_seconds == 300          # default 5 min
+    assert cfg.interval_seconds == 300  # default 5 min
 
 
 def test_non_integer_int_var_exits(clean_env):
@@ -95,6 +100,7 @@ def test_non_integer_int_var_exits(clean_env):
 
 # ---------- connection string (SQL auth) ----------
 
+
 def test_connstr_sql_auth_has_uid_pwd(clean_env):
     set_valid_test_env(clean_env)
     cfg = Config()
@@ -105,10 +111,11 @@ def test_connstr_sql_auth_has_uid_pwd(clean_env):
     assert "DATABASE=LocalTestDB" in s
     assert "Encrypt=no" in s
     assert "TrustServerCertificate=yes" in s
-    assert "Trusted_Connection" not in s        # not windows auth
+    assert "Trusted_Connection" not in s  # not windows auth
 
 
 # ---------- connection string (windows auth) ----------
+
 
 def test_connstr_windows_auth_uses_trusted_connection(clean_env):
     set_valid_test_env(clean_env)
@@ -124,6 +131,7 @@ def test_connstr_windows_auth_uses_trusted_connection(clean_env):
 
 
 # ---------- summary must not leak secrets ----------
+
 
 def test_summary_has_no_password(clean_env):
     set_valid_test_env(clean_env)

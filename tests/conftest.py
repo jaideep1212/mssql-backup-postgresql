@@ -6,6 +6,7 @@ we stub them in sys.modules before any replicator module imports them. This
 lets the whole suite run on a plain machine (and in CI) with no databases and
 no ODBC driver installed.
 """
+
 import sys
 import types
 import pytest
@@ -37,10 +38,11 @@ class FakeCursor:
     canned rows. Deliberately simple - it models the surface the code uses:
     execute(sql, *params), fetchall(), and rowcount.
     """
+
     def __init__(self, rows=None, rowcount=0):
         self._rows = rows or []
         self.rowcount = rowcount
-        self.executed = []          # list of (sql, params) tuples
+        self.executed = []  # list of (sql, params) tuples
 
     def execute(self, sql, *params):
         self.executed.append((sql, params))
