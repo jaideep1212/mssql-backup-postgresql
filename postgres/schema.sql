@@ -1,15 +1,14 @@
 -- ============================================================================
 -- schema.sql
 -- PostgreSQL translation of the SQL Server "LocalTestDB" schema (11 tables).
--- Target database: household_test (test DB)
+-- Target database: household_test (test DB) -- assumed to already exist.
+-- TEST ONLY for now; the prod database will be added later.
 --
--- HOW TO RUN (from the Pi, where your container is named "postgres"):
---   1. Create the database once (connect to the maintenance db first):
---        docker exec -it postgres psql -U admin -d postgres
---        CREATE DATABASE household_test;
---        \q
---   2. Load this schema into it:
+-- HOW TO RUN (from the Pi, where your Postgres container is named "postgres"):
+--   household_test already exists, so just load this schema into it:
 --        cat schema.sql | docker exec -i postgres psql -U admin -d household_test
+--   Re-running is safe: it drops and recreates the mirror tables (data is
+--   repopulated by the consumer from SQL Server).
 --
 -- Translation from SQL Server -> PostgreSQL:
 --   int IDENTITY(1,1) -> bigint (Option A: mirror carries the SQL Server ID
@@ -44,14 +43,15 @@ DROP TABLE IF EXISTS dim_mutual_funds CASCADE;
 DROP TABLE IF EXISTS dim_entities CASCADE;
 DROP TABLE IF EXISTS dim_accounts CASCADE;
 
+
 -- ---------------------------------------------------------------------------
 -- Dimension tables
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE dim_accounts (
-    id                     bigint       NOT NULL,
-    account_no             bytea        NOT NULL,
-    account_no_hash        bytea        NOT NULL,
+    id                     bigint NOT NULL,
+    account_no             bytea         NOT NULL,
+    account_no_hash        bytea         NOT NULL,
     entity_id              integer,
     account_type           text,
     first_holder_id        integer,
@@ -80,8 +80,8 @@ CREATE TABLE dim_accounts (
 );
 
 CREATE TABLE dim_entities (
-    id                      bigint       NOT NULL,
-    entity_name_hash        bytea        NOT NULL,
+    id                      bigint NOT NULL,
+    entity_name_hash        bytea         NOT NULL,
     entity_name             bytea,
     entity_branch           bytea,
     address_line1           bytea,
@@ -105,14 +105,14 @@ CREATE TABLE dim_entities (
 );
 
 CREATE TABLE dim_mutual_funds (
-    id                       bigint       NOT NULL,
-    isin_folio_holder_hash   bytea        NOT NULL,
-    folio_no                 bytea        NOT NULL,
-    scheme_name              bytea        NOT NULL,
-    isin                     bytea        NOT NULL,
-    scheme_code              bytea        NOT NULL,
-    scheme_category          bytea        NOT NULL,
-    first_holder_id          integer      NOT NULL,
+    id                       bigint NOT NULL,
+    isin_folio_holder_hash   bytea         NOT NULL,
+    folio_no                 bytea         NOT NULL,
+    scheme_name              bytea         NOT NULL,
+    isin                     bytea         NOT NULL,
+    scheme_code              bytea         NOT NULL,
+    scheme_category          bytea         NOT NULL,
+    first_holder_id          integer       NOT NULL,
     joint_holder1_id         integer,
     joint_holder2_id         integer,
     nominee1_id              integer,
@@ -152,7 +152,7 @@ CREATE TABLE dim_users (
 );
 
 CREATE TABLE dim_users_s (
-    id                       bigint     NOT NULL,
+    id                       bigint NOT NULL,
     user_id                  integer    NOT NULL,
     first_name               bytea,
     last_name                bytea,
@@ -209,9 +209,9 @@ CREATE TABLE fact_aliases (
 );
 
 CREATE TABLE fact_deposits (
-    id                          bigint        NOT NULL,
+    id                          bigint NOT NULL,
     deposit_no                  bytea         NOT NULL,
-    deposit_no_hash             varchar(64)   NOT NULL,
+    deposit_no_hash             bytea         NOT NULL,
     entity_id                   integer       NOT NULL,
     linked_account_id           integer,
     first_holder_id             integer       NOT NULL,
@@ -251,19 +251,19 @@ CREATE TABLE fact_deposits (
 
 CREATE TABLE fact_mutual_fund_transactions (
     id                      bigint NOT NULL,
-    fund_id                 integer           NOT NULL,
+    fund_id                 integer       NOT NULL,
     transaction_order_hash  bytea,
     exchange                varchar(10),
-    transaction_date        timestamp         NOT NULL,
-    transaction_type        varchar(10)       NOT NULL,
-    realized_amount         numeric(11,2)     NOT NULL,
-    transaction_amount      numeric(11,2)     NOT NULL,
-    transaction_nav         numeric(11,4)     NOT NULL,
-    transaction_units       numeric(11,4)     NOT NULL,
-    transaction_stt         numeric(11,2)     NOT NULL,
-    transaction_tds         numeric(11,2)     NOT NULL,
-    transaction_stamp_duty  numeric(11,2)     NOT NULL,
-    broker_id               integer           NOT NULL,
+    transaction_date        timestamp     NOT NULL,
+    transaction_type        varchar(10)   NOT NULL,
+    realized_amount         numeric(11,2) NOT NULL,
+    transaction_amount      numeric(11,2) NOT NULL,
+    transaction_nav         numeric(11,4) NOT NULL,
+    transaction_units       numeric(11,4) NOT NULL,
+    transaction_stt         numeric(11,2) NOT NULL,
+    transaction_tds         numeric(11,2) NOT NULL,
+    transaction_stamp_duty  numeric(11,2) NOT NULL,
+    broker_id               integer       NOT NULL,
     order_id                bytea,
     trade_id                bytea,
     created_date            timestamp,
