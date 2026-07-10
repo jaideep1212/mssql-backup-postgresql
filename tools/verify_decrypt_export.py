@@ -200,14 +200,39 @@ def load_key(lane: str) -> Fernet:
         sys.exit(2)
 
 
+def _decode_sqlserver_text(raw: bytes) -> str:
+    """
+    Decode bytes that hold text stored by SQL Server, which may be UTF-8 or
+    UTF-16-LE.
+
+    The source app writes some encrypted VARBINARY values (and their decrypted
+    plaintext) as UTF-8, but the ENTITY-side data -- dim_entities, plus the
+    fact_aliases / fact_other_contacts rows with record_type='entities' -- passes
+    through an NVARCHAR value before being CAST to VARBINARY. That yields
+    UTF-16-LE: every ASCII character is followed by a 0x00 padding byte. A Fernet
+    token is pure ASCII base64 and never contains a NUL, so the presence of any
+    NUL byte reliably marks UTF-16-LE (matching the ResponseProcessor UTF-16-LE
+    handling the source app added for entities). Interior NULs are therefore
+    padding, not corruption, and must be stripped -- not just the trailing ones.
+
+    Raises UnicodeDecodeError on genuinely non-text bytes so callers can flag
+    real corruption instead of silently hiding it.
+    """
+    if b"\x00" in raw:
+        # UTF-16-LE (NVARCHAR -> VARBINARY). Drop the 0x00 padding entirely.
+        return raw.decode("utf-16-le").replace("\x00", "")
+    return raw.decode("utf-8")
+
+
 def decrypt_value(fernet: Fernet, value) -> str:
     """
     Decrypt one Fernet-encrypted BYTEA value to a plaintext string.
 
-    Mirrors the source app's logic: Fernet tokens are base64 UTF-8 and start
-    with the 'gAAAAA' version signature. NULL/empty -> ''. A genuine decryption
-    failure is surfaced as a clearly-marked marker so corruption is visible in
-    the CSV rather than silently hidden.
+    Mirrors the source app's logic: Fernet tokens are base64 and start with the
+    'gAAAAA' version signature. The token bytes may be stored as UTF-8 or (for
+    entity-side data) UTF-16-LE; both are handled here. NULL/empty -> ''. A
+    genuine decryption failure is surfaced as a clearly-marked marker so
+    corruption is visible in the CSV rather than silently hidden.
     """
     if value is None or value == b"" or value == "":
         return ""
@@ -218,9 +243,9 @@ def decrypt_value(fernet: Fernet, value) -> str:
     if isinstance(value, str):
         value = value.encode("utf-8")
 
-    # Fernet token -> UTF-8 base64 string
+    # Recover the base64 Fernet token, tolerating UTF-16-LE (entity) storage.
     try:
-        token_str = value.decode("utf-8").rstrip("\x00")
+        token_str = _decode_sqlserver_text(value).strip()
     except UnicodeDecodeError:
         return "<NON-UTF8-BYTES: %s>" % value[:16].hex()
 
@@ -228,7 +253,7 @@ def decrypt_value(fernet: Fernet, value) -> str:
         return ""
 
     try:
-        plaintext = fernet.decrypt(token_str.encode("utf-8")).decode("utf-8")
+        plaintext = _decode_sqlserver_text(fernet.decrypt(token_str.encode("utf-8")))
         return plaintext.replace("\x00", "")
     except InvalidToken:
         # This is the important signal: if the replicated bytes were corrupted,
