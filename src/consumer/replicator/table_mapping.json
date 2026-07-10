@@ -736,7 +736,7 @@
         {
           "mssql": "DepositNoHash",
           "pg": "deposit_no_hash",
-          "pg_type": "varchar(64)"
+          "pg_type": "bytea"
         },
         {
           "mssql": "EntityId",
